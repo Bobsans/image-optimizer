@@ -1,21 +1,18 @@
 from setuptools import setup
-import image_optimizer
+from image_optimizer import optimizer
 
 setup(
     name='image_optimizer',
-    version=image_optimizer.__version__,
-
-    description='PIL image optimizer',
+    version=optimizer.__version__,
+    description='PIL based image optimizer',
     long_description='PIL based image optimizer',
-
-    url='https://pypi.python.org/pypi/image_optimizer',
+    url='https://github.com/Bobsans/image-optimizer',
     download_url='https://pypi.python.org/pypi/image_optimizer',
-
-    author=image_optimizer.__author__,
+    author='Bobsans',
     author_email='mr.bobsans@gmail.com',
-
-    license='BSD',
-
+    maintainer='Bobsans',
+    maintainer_email='mr.bobsans@gmail.com',
+    license='Freeware',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
@@ -34,14 +31,11 @@ setup(
         'Topic :: Multimedia :: Graphics',
         'Topic :: Utilities',
     ],
-
-    keywords='PIL image development',
-
-    py_modules=['image_optimizer'],
-
+    keywords=['PIL', 'optimize', 'image'],
+    platforms=['Any'],
+    packages=['image_optimizer'],
     install_requires=['Pillow'],
-
     entry_points={
-        'console_scripts': ['image_optimizer=image_optimizer:main']
+        'console_scripts': ['image_optimizer=image_optimizer.optimizer:main']
     }
 )

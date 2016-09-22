@@ -3,8 +3,7 @@ import os
 import sys
 from PIL import Image
 
-__author__ = 'Bobsans'
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 
 PIL_FORMATS = [
     'bmp', 'eps', 'gif', 'j2c', 'j2k', 'jp2', 'jpc', 'jpe', 'jpeg', 'jpf',
@@ -17,7 +16,7 @@ def decode(path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='PIL image optimizer v%s by %s.' % (__version__, __author__))
+    parser = argparse.ArgumentParser(description='PIL image optimizer v%s by Bobsans' % __version__)
     parser.add_argument('-f', action='store', nargs='+', dest='files', help='files to optimize')
     parser.add_argument('-d', action='store', dest='folder', help='folder to optimize')
     parser.add_argument('--sub', action='store_true', dest='subfolders', help='scan subdirectories')
@@ -38,8 +37,8 @@ def main():
             for r, d, f in os.walk(args.folder):
                 for file in f:
                     name, ext = os.path.splitext(file)
-                    #if ext and ext.lower()[1:] in PIL_FORMATS:
-                    files.append(os.path.join(r, file))
+                    if ext and ext.lower()[1:] in PIL_FORMATS:
+                        files.append(os.path.join(r, file))
         else:
             for file in os.listdir(args.folder):
                 name, ext = os.path.splitext(file)
