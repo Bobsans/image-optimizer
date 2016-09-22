@@ -1,5 +1,5 @@
-[image_optimizer v0.2b1](https://pypi.python.org/pypi/image_optimizer)
-==================================================
+image_optimizer v0.2.1
+======================================
 
 Оптимизатор изображений на базе PIL.
 
@@ -9,7 +9,7 @@
 pip install image_optimizer
 ```
 
-Использование:
+Использование
 --------------------------------------
 - Оптимизация отдельных файлов:
 ```bash
@@ -22,3 +22,10 @@ pip install image_optimizer
 > image_optimizer -d C:\images --sub
 ```
 
+Поддерживаемые типы файлов
+--------------------------------------
+BMP, EPS, GIF, J2C, J2K, JP2, JPC, JPE, JPEG, JPF, JPG, JPX, MPO, PBM, PCX, PGM, PNG, PPM, TGA
+
+Ссылки
+--------------------------------------
+- [PyPi](https://pypi.python.org/pypi/image_optimizer)

@@ -4,15 +4,15 @@ import sys
 from PIL import Image
 
 __author__ = 'Bobsans'
-__version__ = '0.2b1'
+__version__ = '0.2.1'
 
 PIL_FORMATS = [
-    'bmp', 'eps', 'gif', 'icns', 'im', 'jpeg', 'jpg', 'jpe', 'jfif', 'j2k', 'j2p',
-    'jpx', 'msp', 'pcx', 'png', 'ppm', 'spi', 'tiff', 'tif', 'webp', 'xbm', 'xv'
+    'bmp', 'eps', 'gif', 'j2c', 'j2k', 'jp2', 'jpc', 'jpe', 'jpeg', 'jpf',
+    'jpg', 'jpx', 'mpo', 'pbm', 'pcx', 'pgm', 'png', 'ppm', 'tga'
 ]
 
 
-def decode_path(path):
+def decode(path):
     return path.encode(sys.stdout.encoding, 'ignore').decode(sys.stdout.encoding)
 
 
@@ -38,8 +38,8 @@ def main():
             for r, d, f in os.walk(args.folder):
                 for file in f:
                     name, ext = os.path.splitext(file)
-                    if ext and ext.lower()[1:] in PIL_FORMATS:
-                        files.append(os.path.join(r, file))
+                    #if ext and ext.lower()[1:] in PIL_FORMATS:
+                    files.append(os.path.join(r, file))
         else:
             for file in os.listdir(args.folder):
                 name, ext = os.path.splitext(file)
@@ -54,7 +54,7 @@ def main():
         files_count_len = str(len(str(len(files))))
         for file in files:
             if os.path.exists(file):
-                print(('Processing file [%0' + files_count_len + 'd/%0' + files_count_len + 'd] "%s"... ') % (current, len(files), decode_path(file)), end='')
+                print(('Processing file [%0' + files_count_len + 'd/%0' + files_count_len + 'd] "%s"... ') % (current, len(files), decode(file)), end='')
                 try:
                     before += os.path.getsize(file)
                     with Image.open(file) as img:
@@ -79,7 +79,8 @@ def main():
         if errors:
             print('\nError files:')
             for f in errors:
-                print('    %s: %s' % (decode_path(f.get('file')), f.get('exception')))
+                ex = f.get('exception')
+                print(decode('    %s [%s: %s]' % (f.get('file'), ex.__class__.__name__, ex)))
     else:
         print('Image files not found...')
 
