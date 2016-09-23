@@ -1,9 +1,13 @@
 import argparse
 import os
 import sys
+from datetime import datetime
+import threading
+
+import time
 from PIL import Image
 
-__version__ = '0.2.2'
+__version__ = '0.3'
 
 PIL_FORMATS = [
     'bmp', 'eps', 'gif', 'j2c', 'j2k', 'jp2', 'jpc', 'jpe', 'jpeg', 'jpf',
@@ -15,71 +19,129 @@ def decode(path):
     return path.encode(sys.stdout.encoding, 'ignore').decode(sys.stdout.encoding)
 
 
+class OptimizerError:
+    def __init__(self, file, error):
+        self.file = file
+        self.type = error.__class__.__name__ if isinstance(error, Exception) else 'OptimizeError'
+        self.message = str(error)
+
+    def __str__(self):
+        return '%s [%s: %s]' % (self.file, self.type, self.message)
+
+
+class Optimizer:
+    def __init__(self, files):
+        self.files = files
+        self.success = []
+        self.errors = []
+        self.total_files = len(self.files)
+        self.total_size_before = 0
+        self.total_size_after = 0
+        self.files_count_len = len(str(len(self.files)))
+        self.elapsed_time = 0
+        self.counter = 0
+        self.threads = 0
+
+    def optimize(self, thread_count=0):
+        self.elapsed_time = time.time()
+        self.threads = thread_count if thread_count else 0
+
+        print('Files found: %s' % self.total_files)
+
+        if self.threads:
+            threads = []
+            for i in range(self.threads):
+                threads.append(threading.Thread(target=self.thread_process))
+
+            for thread in threads:
+                thread.start()
+
+            for thread in threads:
+                thread.join()
+        else:
+            self.thread_process()
+
+        self.elapsed_time = time.time() - self.elapsed_time
+        self.show_total_results()
+
+    def thread_process(self):
+        while self.files:
+            self.process_image_file(self.files.pop(0))
+
+    def process_image_file(self, file):
+        size_before = 0
+        size_after = 0
+
+        if not os.path.exists(file):
+            self.errors.append(OptimizerError(file, 'File not found!'))
+            return
+        try:
+            size_before = os.path.getsize(file)
+            with Image.open(file) as img:
+                name, ext = os.path.splitext(os.path.basename(file))
+                img.save(os.path.join(os.path.dirname(file), '%s%s' % (name, ext.lower())), optimize=True)
+            self.success.append(file)
+            size_after = os.path.getsize(file)
+            result = 'OK. Saved: %.2f Kb (%i b) %.2f%%' % ((size_before - size_after) / 1024, size_before - size_after, size_after / (size_before / 100))
+        except Exception as ex:
+            self.errors.append(OptimizerError(file, ex))
+            result = 'ERROR!'
+
+        self.total_size_before += size_before
+        self.total_size_after += size_after
+        self.counter += 1
+
+        print(('[%0' + str(self.files_count_len) + 'd/%0' + str(self.files_count_len) + 'd] Processing file %s: %s') % (self.counter, self.total_files, decode(file), result))
+
+    def show_total_results(self):
+        print('\nOptimization done!\n')
+        print('- Elapsed time:         %s' % datetime.utcfromtimestamp(self.elapsed_time).strftime('%H:%M:%S.%f'))
+        print('- Thread count:         %s' % self.threads if self.threads else 1)
+        print('- Files optimized:      %s' % len(self.success))
+        print('- Size before:          %.2f Kb (%i b)' % (self.total_size_before / 1024, self.total_size_before))
+        print('- Size after:           %.2f Kb (%i b)' % (self.total_size_after / 1024, self.total_size_after))
+        print('- Saved:                %.2f Kb (%i b)' % ((self.total_size_before - self.total_size_after) / 1024, self.total_size_before - self.total_size_after))
+        print('- Percentage of source: %.2f%%' % (self.total_size_after / (self.total_size_before / 100)))
+
+        if self.errors:
+            print('\nErrors:')
+            for error in self.errors:
+                print('\t' + decode(error))
+        else:
+            print('\nNo errors!')
+
+
 def main():
     parser = argparse.ArgumentParser(description='PIL image optimizer v%s by Bobsans' % __version__)
-    parser.add_argument('-f', action='store', nargs='+', dest='files', help='files to optimize')
-    parser.add_argument('-d', action='store', dest='folder', help='folder to optimize')
-    parser.add_argument('--sub', action='store_true', dest='subfolders', help='scan subdirectories')
+    parser.add_argument('-f', dest='files', nargs='+', help='optimize files')
+    parser.add_argument('-d', dest='directory', help='optimize files in directory')
+    parser.add_argument('--sub', dest='subdirectories', action='store_true', help='scan subdirectories')
+    parser.add_argument('-t', dest='threads', type=int, help='set thread count')
 
     args = parser.parse_args()
 
     files = []
-    errors = []
-    before = 0
-    after = 0
-    count = 0
-    current = 1
 
     if args.files:
         files = args.files
-    elif args.folder and os.path.exists(args.folder):
-        if args.subfolders:
-            for r, d, f in os.walk(args.folder):
+    elif args.directory and os.path.exists(args.directory):
+        if args.subdirectories:
+            for r, d, f in os.walk(args.directory):
                 for file in f:
                     name, ext = os.path.splitext(file)
                     if ext and ext.lower()[1:] in PIL_FORMATS:
                         files.append(os.path.join(r, file))
         else:
-            for file in os.listdir(args.folder):
+            for file in os.listdir(args.directory):
                 name, ext = os.path.splitext(file)
                 if ext and ext.lower()[1:] in PIL_FORMATS:
-                    files.append(os.path.join(args.folder, file))
+                    files.append(os.path.join(args.directory, file))
     else:
         parser.print_help()
         exit()
 
     if files:
-        print('Files found: %s' % len(files))
-        files_count_len = str(len(str(len(files))))
-        for file in files:
-            if os.path.exists(file):
-                print(('Processing file [%0' + files_count_len + 'd/%0' + files_count_len + 'd] "%s"... ') % (current, len(files), decode(file)), end='')
-                try:
-                    before += os.path.getsize(file)
-                    with Image.open(file) as img:
-                        name, ext = os.path.splitext(os.path.basename(file))
-                        img.save(os.path.join(os.path.dirname(file), '%s%s' % (name, ext.lower())), optimize=True)
-                    count += 1
-                except Exception as e:
-                    print('ERROR')
-                    errors.append({'file': file, 'exception': e})
-                else:
-                    print('OK')
-                    after += os.path.getsize(file)
-                current += 1
-
-        print('\nCompressing done!\n')
-        print('- Files compressed:   %s' % count)
-        print('- Before size:        %.2f Kb (%i b)' % (before / 1024, before))
-        print('- After size:         %.2f Kb (%i b)' % (after / 1024, after))
-        print('- Saved               %.2f Kb (%i b)' % ((before - after) / 1024, before - after))
-        print('- Percents of source: %.2f%%' % (after / (before / 100)))
-
-        if errors:
-            print('\nError files:')
-            for f in errors:
-                ex = f.get('exception')
-                print(decode('    %s [%s: %s]' % (f.get('file'), ex.__class__.__name__, ex)))
+        Optimizer(files).optimize(args.threads)
     else:
         print('Image files not found...')
 

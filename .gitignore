@@ -1,5 +1,16 @@
-.idea/
+# Byte-compiled / optimized
 __pycache__/
+
+# Distribution / packaging
 build/
+develop-eggs/
 dist/
-image_optimizer.egg-info/
+eggs/
+.eggs/
+lib/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
