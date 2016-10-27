@@ -90,7 +90,7 @@ class Optimizer:
         self.total_size_after += size_after
         self.counter += 1
 
-        print(('[%0' + str(self.files_count_len) + 'd/%0' + str(self.files_count_len) + 'd] Processing file %s: %s') % (self.counter, self.total_files, decode(file), result))
+        print(('[%0' + str(self.files_count_len) + 'd/%0' + str(self.files_count_len) + 'd] %s: %s') % (self.counter, self.total_files, decode(file), result))
 
     def show_total_results(self):
         print('\nOptimization done!\n')
@@ -105,7 +105,7 @@ class Optimizer:
         if self.errors:
             print('\nErrors:')
             for error in self.errors:
-                print('\t' + decode(error))
+                print('\t' + decode(str(error)))
         else:
             print('\nNo errors!')
 
