@@ -1,17 +1,16 @@
 import argparse
 import os
 import sys
-from datetime import datetime
 import threading
-
 import time
-from PIL import Image
+from datetime import datetime
 
-__version__ = '0.3'
+from PIL import Image
+from image_optimizer import __version__
 
 PIL_FORMATS = [
-    'bmp', 'eps', 'gif', 'j2c', 'j2k', 'jp2', 'jpc', 'jpe', 'jpeg', 'jpf',
-    'jpg', 'jpx', 'mpo', 'pbm', 'pcx', 'pgm', 'png', 'ppm', 'tga'
+    'bmp', 'eps', 'gif', 'j2c', 'j2k', 'jp2', 'jpc', 'jpe', 'jpeg', 'jpf', 'jpg', 'jpx', 'mpo', 'pbm',
+    'pcx', 'pgm', 'png', 'ppm', 'tga'
 ]
 
 
@@ -79,10 +78,10 @@ class Optimizer:
             size_before = os.path.getsize(file)
             with Image.open(file) as img:
                 name, ext = os.path.splitext(os.path.basename(file))
-                img.save(os.path.join(os.path.dirname(file), '%s%s' % (name, ext.lower())), optimize=True)
+                img.save(os.path.join(os.path.dirname(file), '%s%s' % (name, str(ext).lower())), optimize=True)
             self.success.append(file)
             size_after = os.path.getsize(file)
-            result = 'OK. Saved: %.2f Kb (%i b) %.2f%%' % ((size_before - size_after) / 1024, size_before - size_after, size_after / (size_before / 100))
+            result = 'OK. [%.2f Kb (%i b) => %.2f Kb (%i b)] %.2f%%' % (size_before / 1024, size_before, size_after / 1024, size_after, size_after / (size_before / 100))
         except Exception as ex:
             self.errors.append(OptimizerError(file, ex))
             result = 'ERROR!'
@@ -96,7 +95,7 @@ class Optimizer:
     def show_total_results(self):
         print('\nOptimization done!\n')
         print('- Elapsed time:         %s' % datetime.utcfromtimestamp(self.elapsed_time).strftime('%H:%M:%S.%f'))
-        print('- Thread count:         %s' % self.threads if self.threads else 1)
+        print('- Thread count:         %s' % (self.threads if self.threads else 1))
         print('- Files optimized:      %s' % len(self.success))
         print('- Size before:          %.2f Kb (%i b)' % (self.total_size_before / 1024, self.total_size_before))
         print('- Size after:           %.2f Kb (%i b)' % (self.total_size_after / 1024, self.total_size_after))
@@ -113,29 +112,32 @@ class Optimizer:
 
 def main():
     parser = argparse.ArgumentParser(description='PIL image optimizer v%s by Bobsans' % __version__)
-    parser.add_argument('-f', dest='files', nargs='+', help='optimize files')
-    parser.add_argument('-d', dest='directory', help='optimize files in directory')
-    parser.add_argument('--sub', dest='subdirectories', action='store_true', help='scan subdirectories')
+    parser.add_argument(dest='source', type=str, help='source to optimize')
+    parser.add_argument('-r', dest='recursive', action='store_true', help='recursive scan subfolders')
     parser.add_argument('-t', dest='threads', type=int, help='set thread count')
 
     args = parser.parse_args()
 
     files = []
 
-    if args.files:
-        files = args.files
-    elif args.directory and os.path.exists(args.directory):
-        if args.subdirectories:
-            for r, d, f in os.walk(args.directory):
-                for file in f:
-                    name, ext = os.path.splitext(file)
-                    if ext and ext.lower()[1:] in PIL_FORMATS:
-                        files.append(os.path.join(r, file))
+    if args.source:
+        if os.path.exists(args.source):
+            if os.path.isfile(args.source):
+                files.append(args.source)
+            elif os.path.isdir(args.source):
+                if args.recursive:
+                    for r, d, f in os.walk(args.source):
+                        for file in f:
+                            name, ext = os.path.splitext(file)
+                            if ext and ext.lower()[1:] in PIL_FORMATS:
+                                files.append(os.path.join(r, file))
+                else:
+                    for file in os.listdir(args.source):
+                        name, ext = os.path.splitext(file)
+                        if ext and ext.lower()[1:] in PIL_FORMATS:
+                            files.append(os.path.join(args.source, file))
         else:
-            for file in os.listdir(args.directory):
-                name, ext = os.path.splitext(file)
-                if ext and ext.lower()[1:] in PIL_FORMATS:
-                    files.append(os.path.join(args.directory, file))
+            print('Path not exists!', file=sys.stderr)
     else:
         parser.print_help()
         exit()

@@ -1,16 +1,6 @@
-# Byte-compiled / optimized
-__pycache__/
-
-# Distribution / packaging
 build/
-develop-eggs/
 dist/
-eggs/
-.eggs/
-lib/
-parts/
-sdist/
-var/
 *.egg-info/
-.installed.cfg
 *.egg
+*.py[cod]
+__pycache__/
