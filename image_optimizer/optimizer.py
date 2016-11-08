@@ -29,8 +29,10 @@ class OptimizerError:
 
 
 class Optimizer:
-    def __init__(self, files):
+    def __init__(self, files, threads=1, logging=True):
         self.files = files
+        self.threads = threads or 0
+        self.logging = logging
         self.success = []
         self.errors = []
         self.total_files = len(self.files)
@@ -41,16 +43,21 @@ class Optimizer:
         self.counter = 0
         self.threads = 0
 
-    def optimize(self, thread_count=0):
-        self.elapsed_time = time.time()
-        self.threads = thread_count if thread_count else 0
+    def log(self, value):
+        if self.logging:
+            print(value)
 
-        print('Files found: %s' % self.total_files)
+    def optimize(self):
+        if not self.files:
+            self.log('No files found...')
+            return
+
+        self.elapsed_time = time.time()
+
+        self.log('Files found: %s' % self.total_files)
 
         if self.threads:
-            threads = []
-            for i in range(self.threads):
-                threads.append(threading.Thread(target=self.thread_process))
+            threads = [threading.Thread(target=self.thread_process) for _ in range(self.threads)]
 
             for thread in threads:
                 thread.start()
@@ -90,24 +97,24 @@ class Optimizer:
         self.total_size_after += size_after
         self.counter += 1
 
-        print(('[%0' + str(self.files_count_len) + 'd/%0' + str(self.files_count_len) + 'd] %s: %s') % (self.counter, self.total_files, decode(file), result))
+        self.log(('[%0' + str(self.files_count_len) + 'd/%0' + str(self.files_count_len) + 'd] %s: %s') % (self.counter, self.total_files, decode(file), result))
 
     def show_total_results(self):
-        print('\nOptimization done!\n')
-        print('- Elapsed time:         %s' % datetime.utcfromtimestamp(self.elapsed_time).strftime('%H:%M:%S.%f'))
-        print('- Thread count:         %s' % (self.threads if self.threads else 1))
-        print('- Files optimized:      %s' % len(self.success))
-        print('- Size before:          %.2f Kb (%i b)' % (self.total_size_before / 1024, self.total_size_before))
-        print('- Size after:           %.2f Kb (%i b)' % (self.total_size_after / 1024, self.total_size_after))
-        print('- Saved:                %.2f Kb (%i b)' % ((self.total_size_before - self.total_size_after) / 1024, self.total_size_before - self.total_size_after))
-        print('- Percentage of source: %.2f%%' % (self.total_size_after / (self.total_size_before / 100)))
+        self.log('\nOptimization done!\n')
+        self.log('- Elapsed time:         %s' % datetime.utcfromtimestamp(self.elapsed_time).strftime('%H:%M:%S.%f'))
+        self.log('- Thread count:         %s' % (self.threads if self.threads else 1))
+        self.log('- Files optimized:      %s' % len(self.success))
+        self.log('- Size before:          %.2f Kb (%i b)' % (self.total_size_before / 1024, self.total_size_before))
+        self.log('- Size after:           %.2f Kb (%i b)' % (self.total_size_after / 1024, self.total_size_after))
+        self.log('- Saved:                %.2f Kb (%i b)' % ((self.total_size_before - self.total_size_after) / 1024, self.total_size_before - self.total_size_after))
+        self.log('- Percentage of source: %.2f%%' % (self.total_size_after / (self.total_size_before / 100)))
 
         if self.errors:
-            print('\nErrors:')
+            self.log('\nErrors:')
             for error in self.errors:
-                print('\t' + decode(str(error)))
+                self.log('\t' + decode(str(error)))
         else:
-            print('\nNo errors!')
+            self.log('\nNo errors!')
 
 
 def main():
@@ -115,6 +122,7 @@ def main():
     parser.add_argument(dest='source', type=str, help='source to optimize')
     parser.add_argument('-r', dest='recursive', action='store_true', help='recursive scan subfolders')
     parser.add_argument('-t', dest='threads', type=int, help='set thread count')
+    parser.add_argument('-l', dest='logging', action='store_false', help='disable logging')
 
     args = parser.parse_args()
 
@@ -137,15 +145,12 @@ def main():
                         if ext and ext.lower()[1:] in PIL_FORMATS:
                             files.append(os.path.join(args.source, file))
         else:
-            print('Path not exists!', file=sys.stderr)
+            print('Path not exists!')
     else:
         parser.print_help()
         exit()
 
-    if files:
-        Optimizer(files).optimize(args.threads)
-    else:
-        print('Image files not found...')
+    Optimizer(files, args.threads, args.logging).optimize()
 
 
 if __name__ == '__main__':

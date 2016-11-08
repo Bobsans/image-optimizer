@@ -5,14 +5,11 @@ from setuptools import setup, find_packages
 
 base = os.path.abspath(os.path.dirname(__file__))
 
-with open(os.path.join(base, 'README.md'), encoding='utf-8') as file:
-    long_description = file.read()
-
 setup(
     name='image_optimizer',
     version=__version__,
     description='PIL based image optimizer',
-    long_description=long_description,
+    long_description='PIL based image optimizer.\nDetails: https://github.com/Bobsans/image-optimizer',
     url='https://github.com/Bobsans/image-optimizer',
     download_url='https://pypi.python.org/pypi/image_optimizer',
     author='Bobsans',

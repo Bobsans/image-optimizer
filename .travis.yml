@@ -1,0 +1,17 @@
+language: python
+python:
+  - 3.2
+  - 3.3
+  - 3.4
+  - 3.5
+  - 3.5-dev
+  - 3.6-dev
+  - pypy
+  - pypy3
+install:
+  - pip install coveralls
+  - pip install .
+script:
+  - image_optimizer -h
+after_success:
+  - coveralls
