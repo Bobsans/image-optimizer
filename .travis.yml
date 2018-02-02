@@ -14,6 +14,6 @@ install:
   - pip install .
 script:
   - image_optimizer -h
-  - image_optimizer -r -t 2 ./samples
+  - image_optimizer -r -l ./samples
 after_success:
   - coveralls
