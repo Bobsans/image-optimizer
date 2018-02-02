@@ -2,7 +2,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/Bobsans/image-optimizer/badge.svg?branch=master)](https://coveralls.io/github/Bobsans/image-optimizer?branch=master)
 [![PyPI version](https://badge.fury.io/py/image_optimizer.svg)](https://badge.fury.io/py/image_optimizer)
 
-image_optimizer v0.3.2
+image_optimizer v0.3.3
 ======================================
 
 Оптимизатор изображений на базе PIL.
@@ -56,6 +56,10 @@ BMP, EPS, GIF, J2C, J2K, JP2, JPC, JPE, JPEG, JPF, JPG, JPX, MPO, PBM, PCX, PGM,
 
 Список изменений
 --------------------------------------
+* **v0.3.3** \[_02.02.2018_\]
+
+    - Обновлены зависимости.
+
 * **v0.3.2** \[_08.11.2016_\]
 
     - Добавлен аргумент `-l`, отелючающий вывод статистики.
