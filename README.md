@@ -45,7 +45,7 @@ pip install image_optimizer
 > image_optimizer C:\images -r -t 4
 
 # Оптимизация изображений в директории images и вложенных директориях в 4 потока без вывода информации
-> image_optimizer C:\images -r -t 4 -n
+> image_optimizer C:\images -r -t 4 -l
 ```
 
 

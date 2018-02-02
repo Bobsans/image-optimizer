@@ -6,6 +6,7 @@ import time
 from datetime import datetime
 
 from PIL import Image
+
 from image_optimizer import __version__
 
 PIL_FORMATS = [

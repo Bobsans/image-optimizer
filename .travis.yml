@@ -1,11 +1,12 @@
 language: python
 python:
-  - 3.2
   - 3.3
   - 3.4
   - 3.5
   - 3.5-dev
+  - 3.6
   - 3.6-dev
+  - 3.7-dev
   - pypy
   - pypy3
 install:
@@ -13,5 +14,6 @@ install:
   - pip install .
 script:
   - image_optimizer -h
+  - image_optimizer -r -t 2 ./samples
 after_success:
   - coveralls
