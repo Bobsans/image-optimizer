@@ -8,6 +8,7 @@ from datetime import datetime
 from PIL import Image
 
 from image_optimizer import __version__
+from image_optimizer.utils import format_size
 
 PIL_FORMATS = [
     'bmp', 'eps', 'gif', 'j2c', 'j2k', 'jp2', 'jpc', 'jpe', 'jpeg', 'jpf', 'jpg', 'jpx', 'mpo', 'pbm',
@@ -89,13 +90,14 @@ class Optimizer:
                 img.save(os.path.join(os.path.dirname(file), '%s%s' % (name, str(ext).lower())), optimize=True)
             self.success.append(file)
             size_after = os.path.getsize(file)
-            result = 'OK. [%.2f Kb (%i b) => %.2f Kb (%i b)] %.2f%%' % (size_before / 1024, size_before, size_after / 1024, size_after, size_after / (size_before / 100))
+            result = 'OK. [%s (%i b) => %s (%i b)] %.2f%%' % (format_size(size_before), size_before, format_size(size_after), size_after, size_after / (size_before / 100))
+
+            self.total_size_before += size_before
+            self.total_size_after += size_after
         except Exception as ex:
             self.errors.append(OptimizerError(file, ex))
             result = 'ERROR!'
 
-        self.total_size_before += size_before
-        self.total_size_after += size_after
         self.counter += 1
 
         self.log(('[%0' + str(self.files_count_len) + 'd/%0' + str(self.files_count_len) + 'd] %s: %s') % (self.counter, self.total_files, decode(file), result))
@@ -105,9 +107,9 @@ class Optimizer:
         self.log('- Elapsed time:         %s' % datetime.utcfromtimestamp(self.elapsed_time).strftime('%H:%M:%S.%f'))
         self.log('- Thread count:         %s' % (self.threads if self.threads else 1))
         self.log('- Files optimized:      %s' % len(self.success))
-        self.log('- Size before:          %.2f Kb (%i b)' % (self.total_size_before / 1024, self.total_size_before))
-        self.log('- Size after:           %.2f Kb (%i b)' % (self.total_size_after / 1024, self.total_size_after))
-        self.log('- Saved:                %.2f Kb (%i b)' % ((self.total_size_before - self.total_size_after) / 1024, self.total_size_before - self.total_size_after))
+        self.log('- Size before:          %s (%i b)' % (format_size(self.total_size_before), self.total_size_before))
+        self.log('- Size after:           %s (%i b)' % (format_size(self.total_size_after), self.total_size_after))
+        self.log('- Saved:                %s (%i b)' % (format_size(self.total_size_before - self.total_size_after), self.total_size_before - self.total_size_after))
         self.log('- Percentage of source: %.2f%%' % (self.total_size_after / (self.total_size_before / 100)))
 
         if self.errors:
