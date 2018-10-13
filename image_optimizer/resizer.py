@@ -10,7 +10,7 @@ class ImageResizeError(Exception):
 class ResizePattern:
     __slots__ = ('limiter', 'width', 'height', 'force')
 
-    def __init__(self, limiter, width, height, force):
+    def __init__(self, limiter: str, width: int, height: int, force: bool = False):
         self.limiter = limiter
         self.width = width
         self.height = height
@@ -52,7 +52,7 @@ class Resizer:
         return image
 
     @classmethod
-    def crop(cls, image: Image, pattern: ResizePattern, anchor='center'):
+    def crop(cls, image: Image, pattern: ResizePattern, anchor: str = 'center'):
         image = cls.resize(image, pattern)
         w, h = image.size
 
