@@ -2,7 +2,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/Bobsans/image-optimizer/badge.svg?branch=master)](https://coveralls.io/github/Bobsans/image-optimizer?branch=master)
 [![PyPI version](https://badge.fury.io/py/image_optimizer.svg)](https://badge.fury.io/py/image_optimizer)
 
-image_optimizer v0.3.4
+image_optimizer
 ======================================
 
 Оптимизатор изображений на базе PIL.
@@ -38,9 +38,6 @@ pip install image_optimizer
 
 # Оптимизация изображений в директории images и вложенных директориях
 > image_optimizer C:\images -r
-
-# Оптимизация изображений в директории images в 3 потока
-> image_optimizer C:\images -t 3
 
 # Оптимизация изображений в директории images и вложенных директориях в 4 потока
 > image_optimizer C:\images -r -t 4
@@ -95,6 +92,10 @@ BMP, EPS, GIF, J2C, J2K, JP2, JPC, JPE, JPEG, JPF, JPG, JPX, MPO, PBM, PCX, PGM,
 
 Список изменений
 --------------------------------------
+* **v0.3.5** \[_13.10.2018_\]
+
+    - Добавлена возможность ресайзинга изображений.
+
 * **v0.3.4** \[_27.03.2018_\]
 
     - Переработано форматирование размеров файлов.
