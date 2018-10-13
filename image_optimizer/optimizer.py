@@ -89,9 +89,6 @@ class Optimizer:
             self.process_image_file(self.files.pop(0))
 
     def process_image_file(self, file):
-        size_before = 0
-        size_after = 0
-
         if not os.path.exists(file):
             self.errors.append(OptimizerError(file, 'File not found!'))
             return
@@ -132,7 +129,7 @@ class Optimizer:
         if self.errors:
             self.log('\nErrors:')
             for error in self.errors:
-                self.log('\t' + decode(str(error)))
+                self.log('    ' + decode(str(error)))
         else:
             self.log('\nNo errors!')
 
