@@ -1,5 +1,6 @@
 import argparse
 import os
+import re
 import sys
 import threading
 import time
@@ -8,6 +9,7 @@ from datetime import datetime
 from PIL import Image
 
 from image_optimizer import __version__
+from image_optimizer.resizer import ResizePattern, Resizer
 from image_optimizer.utils import format_size
 
 PIL_FORMATS = [
@@ -31,10 +33,11 @@ class OptimizerError:
 
 
 class Optimizer:
-    def __init__(self, files, threads=1, logging=True):
+    def __init__(self, files, threads=1, logging=True, resize=False):
         self.files = files
         self.threads = threads or 0
         self.logging = logging
+        self.resize_pattern = self._prepare_resize_value(resize)
         self.success = []
         self.errors = []
         self.total_files = len(self.files)
@@ -42,6 +45,7 @@ class Optimizer:
         self.total_size_after = 0
         self.files_count_len = len(str(len(self.files)))
         self.elapsed_time = 0
+        self.resized = 0
         self.counter = 0
         self.threads = 0
 
@@ -49,7 +53,15 @@ class Optimizer:
         if self.logging:
             print(value)
 
-    def optimize(self):
+    @staticmethod
+    def _prepare_resize_value(value):
+        if isinstance(value, str):
+            match = re.search(r'^(?P<flag>(min|max))?(?P<width>\d+)x(?P<height>\d+)(?P<force>f)?$', value)
+            if match:
+                return ResizePattern(match.group('flag'), int(match.group('width')), int(match.group('height')), bool(match.group('force')))
+        return False
+
+    def run(self):
         if not self.files:
             self.log('No files found...')
             return
@@ -87,6 +99,9 @@ class Optimizer:
             size_before = os.path.getsize(file)
             with Image.open(file) as img:
                 name, ext = os.path.splitext(os.path.basename(file))
+                if self.resize_pattern and self.resize_pattern.has_need_resize(img):
+                    img = Resizer.resize(img, self.resize_pattern)
+                    self.resized += 1
                 img.save(os.path.join(os.path.dirname(file), '%s%s' % (name, str(ext).lower())), optimize=True)
             self.success.append(file)
             size_after = os.path.getsize(file)
@@ -106,7 +121,9 @@ class Optimizer:
         self.log('\nOptimization done!\n')
         self.log('- Elapsed time:         %s' % datetime.utcfromtimestamp(self.elapsed_time).strftime('%H:%M:%S.%f'))
         self.log('- Thread count:         %s' % (self.threads if self.threads else 1))
-        self.log('- Files optimized:      %s' % len(self.success))
+        self.log('- Images optimized:     %s' % len(self.success))
+        if self.resize_pattern:
+            self.log('- Images resized:       %s' % self.resized)
         self.log('- Size before:          %s (%i b)' % (format_size(self.total_size_before), self.total_size_before))
         self.log('- Size after:           %s (%i b)' % (format_size(self.total_size_after), self.total_size_after))
         self.log('- Saved:                %s (%i b)' % (format_size(self.total_size_before - self.total_size_after), self.total_size_before - self.total_size_after))
@@ -126,6 +143,7 @@ def main():
     parser.add_argument('-r', dest='recursive', action='store_true', help='recursive scan subfolders')
     parser.add_argument('-t', dest='threads', type=int, help='set thread count')
     parser.add_argument('-l', dest='logging', action='store_false', help='disable logging')
+    parser.add_argument('-s', dest='resize_pattern', action='store', help='resize images')
 
     args = parser.parse_args()
 
@@ -153,7 +171,7 @@ def main():
         parser.print_help()
         exit()
 
-    Optimizer(files, args.threads, args.logging).optimize()
+    Optimizer(files, args.threads, args.logging, args.resize_pattern).run()
 
 
 if __name__ == '__main__':
