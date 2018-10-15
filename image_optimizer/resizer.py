@@ -3,10 +3,6 @@ import math
 from PIL import Image
 
 
-class ImageResizeError(Exception):
-    pass
-
-
 class ResizePattern:
     __slots__ = ('limiter', 'width', 'height', 'force')
 
@@ -35,13 +31,15 @@ class ResizePattern:
         w, h = image.size
         return (self.limiter == 'min' and (w < self.width or h < self.height)) or (self.limiter == 'max' and (w > self.width or h > self.height)) or self.limitfn is None or self.force
 
-    def __repr__(self):
+    def __str__(self):
         return ''.join((
-            '<ResizePattern(w=%s h=%s' % (self.width, self.height),
+            'w=%s h=%s' % (self.width, self.height),
             (' l=%s' % self.limiter) if self.limitfn else '',
-            ' f' if self.force else '',
-            ')>'
+            ' f' if self.force else ''
         ))
+
+    def __repr__(self):
+        return '<ResizePattern(' + self.__str__() + ')>'
 
 
 class Resizer:

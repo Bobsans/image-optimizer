@@ -1,7 +1,8 @@
 import os
 
+from setuptools import find_packages, setup
+
 from image_optimizer import __version__
-from setuptools import setup, find_packages
 
 base = os.path.abspath(os.path.dirname(__file__))
 
@@ -39,6 +40,6 @@ setup(
     packages=find_packages(),
     install_requires=['Pillow'],
     entry_points={
-        'console_scripts': ['image_optimizer=image_optimizer.optimizer:main']
+        'console_scripts': ['image_optimizer=image_optimizer.__main__:main']
     }
 )

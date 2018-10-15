@@ -1,3 +1,5 @@
+import logging
+import sys
 from collections import OrderedDict
 
 SIZES = OrderedDict((('kb', 1024), ('mb', 1024 ** 2), ('gb', 1024 ** 3)))
@@ -32,3 +34,15 @@ def format_size(value, force=None):
         return '%i b' % value
     else:
         return '%.2f %s' % (value, ext)
+
+
+def decode(path):
+    return path.encode(sys.stdout.encoding, 'ignore').decode(sys.stdout.encoding)
+
+
+def make_logger():
+    logger = logging.getLogger('image_optimizer')
+    handler = logging.StreamHandler(sys.stdout)
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
+    return logger
