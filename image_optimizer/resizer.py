@@ -2,6 +2,8 @@ import math
 
 from PIL import Image
 
+from image_optimizer.errors import ResizeError
+
 
 class ResizePattern:
     __slots__ = ('limiter', 'width', 'height', 'force')
@@ -62,7 +64,7 @@ class Resizer:
             elif anchor == 'bottom':
                 image = image.crop((w - pattern.width, 0, pattern.width, pattern.height))
             else:
-                raise ValueError('Invalid value for crop_type')
+                raise ResizeError('Invalid value for crop_type')
         elif h > pattern.height:
             if anchor == 'top':
                 image = image.crop((0, 0, pattern.width, pattern.height))
@@ -71,6 +73,6 @@ class Resizer:
             elif anchor == 'bottom':
                 image = image.crop((0, h - pattern.height, pattern.width, pattern.height))
             else:
-                raise ValueError('Invalid value for crop_type')
+                raise ResizeError('Invalid value for crop_type')
 
         return image
